@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeStar</title>
+<!-- Google Fonts for elevated visual identity and typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+<!-- LOADING / SPLASH SCREEN (logo + health-colored progress bar) -->
+<div id="splash" class="">
+  <div id="splashLogo">
+    <img src="/logo.png" alt="TYPE STAR" referrerPolicy="no-referrer">
+  </div>
+  <div id="hud-loading-label" class="hud-loading-lbl">HUD LOADING...</div>
+  <div id="loadWrap"><div id="loadBar"></div></div>
+</div>
+
+<div id="top-console">
+  <svg id="top-base" viewBox="0 0 1600 92" preserveAspectRatio="none" aria-hidden="true" style="width: 100%; height: 100%; display: block;">
+    <!-- Backing metal sheet -->
+    <rect width="1600" height="92" fill="url(#hull-dark)"/>
+    
+    <!-- Left Vent (x=50 to 140) - Secondary Diagnostics / Top Hull Bars -->
+    <g class="exhaust-port" transform="translate(15, 0)">
+      <rect x="50" y="24" width="90" height="44" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <rect id="top-hull-bar-1" x="57" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-1)" class="hull-bar"/>
+      <rect id="top-hull-bar-2" x="73" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-2)" class="hull-bar"/>
+      <rect id="top-hull-bar-3" x="89" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-3)" class="hull-bar"/>
+      <rect id="top-hull-bar-4" x="105" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-4)" class="hull-bar"/>
+      <rect id="top-hull-bar-5" x="121" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-5)" class="hull-bar"/>
+    </g>
+
+    <!-- Right Vent (x=1445 to 1535) - Secondary Diagnostics / Top Shield Bars -->
+    <g class="exhaust-port" transform="translate(40, 0)">
+      <rect x="1410" y="24" width="90" height="44" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <rect id="top-shield-bar-1" x="1417" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-1)" class="shield-bar"/>
+      <rect id="top-shield-bar-2" x="1433" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-2)" class="shield-bar"/>
+      <rect id="top-shield-bar-3" x="1449" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-3)" class="shield-bar"/>
+      <rect id="top-shield-bar-4" x="1465" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-4)" class="shield-bar"/>
+      <rect id="top-shield-bar-5" x="1481" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-5)" class="shield-bar"/>
+    </g>
+
+    <!-- Left Starship Dashboard Backing Structure (x=150 to 650) -->
+    <g transform="translate(14, 0)">
+      <rect x="150" y="16" width="530" height="60" rx="10" fill="#08090b" stroke="#334155" stroke-width="2.5"/>
+      <rect x="154" y="20" width="522" height="52" rx="8" fill="url(#hull-dark)" opacity="0.95"/>
+    </g>
+
+    <!-- Right Starship Dashboard Backing Structure (x=930 to 1430) -->
+    <g transform="translate(-14, 0)">
+      <rect x="920" y="16" width="530" height="60" rx="10" fill="#08090b" stroke="#334155" stroke-width="2.5"/>
+      <rect x="924" y="20" width="522" height="52" rx="8" fill="url(#hull-dark)" opacity="0.95"/>
+    </g>
+
+    <!-- Center Arch / Chamber Structure (No Core, No Turret) -->
+    <circle cx="800" cy="0" r="84" fill="none" stroke="#2a3744" stroke-width="10" stroke-opacity="0.8"/>
+    <path d="M 724,0 A 76,76 0 0,0 876,0 Z" fill="url(#hull-dark)" stroke="#334155" stroke-width="2"/>
+  </svg>
+  <div id="level">BATTLE 1 · WAVE 1</div>
+</div>
+
+<div id="radar-container">
+  <span class="radar-lbl">RADAR:</span>
+  <div id="radar-track"></div>
+</div>
+
+<div id="stage">
+  <div id="cockpit-overlay">
+    <div id="hud-left">
+      <div class="stat-group">
+        <div class="stat-lbl" style="display: flex; align-items: center; gap: 6px;">SCORE <span id="double-points-indicator" class="double-indicator gold-flash hidden">X2</span></div>
+        <div id="score">0</div>
+      </div>
+      <div class="stat-group">
+        <div class="stat-lbl">COMBO</div>
+        <div id="combo">0×</div>
+      </div>
+      <div class="stat-group">
+        <div class="stat-lbl">SPEED</div>
+        <div id="wpm">WPM: 0</div>
+      </div>
+      <div class="stat-group" id="hudNanoInfo">
+        <div class="stat-lbl">TOTAL NANO</div>
+        <div style="color: #7fd0ff; font-weight: 700; text-shadow: 0 0 8px rgba(127, 208, 255, 0.5);"><span id="hudNanoCount">0</span> ❖</div>
+      </div>
+      <div class="stat-group score-rank-group">
+        <div style="display: flex; flex-direction: column; width: fit-content;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div id="rank">RANK 1</div>
+            <span id="nano-xp-indicator" class="double-indicator blue-flash hidden">X2</span>
+          </div>
+          <div id="xpwrap"><div id="xpfill"></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="hud-right">
+      <div style="display: flex; gap: 24px; align-items: center;">
+        <div class="hud-control-info">
+          <div class="hud-stat-lbl">CONTROLS</div>
+          <p id="modeHint" class="controls-hint">ESC = PAUSE&nbsp;&nbsp;·&nbsp;&nbsp;ALT = CYPHERS</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHIP FRAME (Mothership art spike) — hull is fluid full-width pinned to
+       the bottom; #turret stays the rotatable container so turret.js's
+       transform contract (translateX(-50%) rotate()) is unchanged. -->
+  <svg id="shipDefs" width="0" height="0" style="position:absolute">
+    <defs>
+      <linearGradient id="hull-mat" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#2a2d33"/>
+        <stop offset="22%"  stop-color="#191a1d"/>
+        <stop offset="60%"  stop-color="#101112"/>
+        <stop offset="100%" stop-color="#050607"/>
+      </linearGradient>
+      <linearGradient id="hull-dark" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#222428"/>
+        <stop offset="40%"  stop-color="#121316"/>
+        <stop offset="100%" stop-color="#050506"/>
+      </linearGradient>
+      <linearGradient id="exhaust-glow" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#ef4444"/>
+        <stop offset="50%"  stop-color="#f97316"/>
+        <stop offset="100%" stop-color="#ef4444"/>
+      </linearGradient>
+      <radialGradient id="reactor-glow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#7fd0ff"/>
+        <stop offset="45%"  stop-color="#1d4ed8"/>
+        <stop offset="100%" stop-color="#020617"/>
+      </radialGradient>
+      <linearGradient id="barrel" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#2a3744"/><stop offset="50%" stop-color="#33424f"/><stop offset="100%" stop-color="#1a242d"/>
+      </linearGradient>
+      <linearGradient id="housing" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2e3c49"/><stop offset="60%" stop-color="#1d2832"/><stop offset="100%" stop-color="#121a22"/>
+      </linearGradient>
+      <radialGradient id="muzzle-hot" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0%" stop-color="#fff2c8"/><stop offset="30%" stop-color="#ffb22e"/>
+        <stop offset="80%" stop-color="#b5641a"/><stop offset="100%" stop-color="#5a2f0c"/>
+      </radialGradient>
+      <filter id="amber-bloom" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="2" result="b1"/>
+        <feGaussianBlur stdDeviation="6" in="SourceGraphic" result="b2"/>
+        <feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="hot-bloom" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" result="b1"/>
+        <feGaussianBlur stdDeviation="10" in="SourceGraphic" result="b2"/>
+        <feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <!-- neon-blue vein glow -->
+      <filter id="vein-bloom" x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur stdDeviation="1.5" result="v1"/>
+        <feGaussianBlur stdDeviation="4" in="SourceGraphic" result="v2"/>
+        <feMerge><feMergeNode in="v2"/><feMergeNode in="v1"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <!-- 5-Bar Dynamic Gradients -->
+      <linearGradient id="hull-grad-1" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="hull-grad-2" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="hull-grad-3" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="hull-grad-4" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="hull-grad-5" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="shield-grad-1" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="shield-grad-2" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="shield-grad-3" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="shield-grad-4" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+      <linearGradient id="shield-grad-5" x1="0" y1="0" x2="1" y2="0"></linearGradient>
+    </defs>
+  </svg>
+
+  <!-- HULL: fluid width via preserveAspectRatio=none; 92px tall; pinned bottom -->
+  <svg id="base" viewBox="0 0 1600 92" preserveAspectRatio="none" aria-hidden="true">
+    <!-- Backing metal sheet -->
+    <rect width="1600" height="92" fill="url(#hull-dark)"/>
+    
+    <!-- Dual auxiliary engine exhaust cooling vents (pulsing warm embers) -->
+    <!-- Left Vent (x=50 to 140) - Hull Strength Bars (5 bars) -->
+    <g class="exhaust-port" transform="translate(15, 0)">
+      <rect x="50" y="24" width="90" height="44" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <rect id="hull-bar-1" x="57" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-1)" class="hull-bar"/>
+      <rect id="hull-bar-2" x="73" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-2)" class="hull-bar"/>
+      <rect id="hull-bar-3" x="89" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-3)" class="hull-bar"/>
+      <rect id="hull-bar-4" x="105" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-4)" class="hull-bar"/>
+      <rect id="hull-bar-5" x="121" y="28" width="12" height="36" rx="2" fill="url(#hull-grad-5)" class="hull-bar"/>
+    </g>
+
+    <!-- Right Vent (x=1445 to 1535) - Shield Bars (5 bars) -->
+    <g class="exhaust-port" transform="translate(40, 0)">
+      <rect x="1410" y="24" width="90" height="44" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <rect id="shield-bar-1" x="1417" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-1)" class="shield-bar"/>
+      <rect id="shield-bar-2" x="1433" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-2)" class="shield-bar"/>
+      <rect id="shield-bar-3" x="1449" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-3)" class="shield-bar"/>
+      <rect id="shield-bar-4" x="1465" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-4)" class="shield-bar"/>
+      <rect id="shield-bar-5" x="1481" y="28" width="12" height="36" rx="2" fill="url(#shield-grad-5)" class="shield-bar"/>
+    </g>
+
+    <!-- Left Starship Dashboard Backing Structure (x=150 to 650) -->
+    <g transform="translate(14, 0)">
+      <rect x="150" y="16" width="530" height="60" rx="10" fill="#08090b" stroke="#334155" stroke-width="2.5"/>
+      <rect x="154" y="20" width="522" height="52" rx="8" fill="url(#hull-dark)" opacity="0.95"/>
+    </g>
+
+    <!-- Right Starship Dashboard Backing Structure (x=930 to 1430) -->
+    <g transform="translate(-14, 0)">
+      <rect x="920" y="16" width="530" height="60" rx="10" fill="#08090b" stroke="#334155" stroke-width="2.5"/>
+      <rect x="924" y="20" width="522" height="52" rx="8" fill="url(#hull-dark)" opacity="0.95"/>
+    </g>
+
+    <!-- BIOLUMLINESCENT VEINS: Empty matching user request (preserves ID structure for health flash effects) -->
+    <g id="veins" filter="url(#vein-bloom)">
+    </g>
+
+    <!-- Center Reactor & Turret Platform Structure (centered at x=800) -->
+    <!-- Magnetic Induction Outer Ring -->
+    <circle cx="800" cy="92" r="84" fill="none" stroke="#2a3744" stroke-width="10" stroke-opacity="0.8"/>
+    <!-- Central blue fire reactor chamber -->
+    <path d="M 724,92 A 76,76 0 0,1 876,92 Z" fill="url(#hull-dark)" stroke="#334155" stroke-width="2"/>
+    <circle class="reactor-core-cell" cx="800" cy="92" r="48" fill="url(#reactor-glow)" filter="url(#amber-bloom)" opacity="0.8"/>
+    <circle cx="800" cy="92" r="28" fill="#020617" stroke="#1e3a8a" stroke-width="4"/>
+    <circle cx="800" cy="92" r="12" fill="#7fd0ff" filter="url(#hot-bloom)"/>
+    <!-- Outer mechanical support arcs -->
+    <path d="M 740,92 L 720,68 L 720,92 Z" fill="#334155" stroke="#0f172a" stroke-width="1"/>
+    <path d="M 860,92 L 880,68 L 880,92 Z" fill="#334155" stroke="#0f172a" stroke-width="1"/>
+
+    <!-- Left & Right tactical scanning hologram overlays -->
+    <!-- Left telemetry screen (x=20 to 50) -->
+    <g class="tactical-gauge" opacity="0.32" transform="translate(10, 0)">
+      <circle cx="35" cy="50" r="14" fill="none" stroke="#7fd0ff" stroke-width="1"/>
+      <circle cx="35" cy="50" r="7" fill="none" stroke="#7fd0ff" stroke-width="0.5" stroke-dasharray="3,2"/>
+      <line x1="35" y1="32" x2="35" y2="68" stroke="#7fd0ff" stroke-width="0.5"/>
+      <line x1="17" y1="50" x2="53" y2="50" stroke="#7fd0ff" stroke-width="0.5"/>
+    </g>
+    <!-- Right telemetry screen (x=1550 to 1580) -->
+    <g class="tactical-gauge" opacity="0.32" transform="translate(-10, 0)">
+      <circle cx="1565" cy="50" r="14" fill="none" stroke="#7fd0ff" stroke-width="1"/>
+      <circle cx="1565" cy="50" r="7" fill="none" stroke="#7fd0ff" stroke-width="0.5" stroke-dasharray="3,2"/>
+      <line x1="1565" y1="32" x2="1565" y2="68" stroke="#7fd0ff" stroke-width="0.5"/>
+      <line x1="1547" y1="50" x2="1583" y2="50" stroke="#7fd0ff" stroke-width="0.5"/>
+    </g>
+
+  </svg>
+
+  <!-- TURRET: rotatable container (turret.js sets transform). The twin cannon
+       SVG draws around a 0,0 pivot at the container's bottom-center. -->
+  <div id="turret">
+    <svg viewBox="-40 -84 80 96" width="80" height="96" overflow="visible" aria-hidden="true">
+      <g transform="scale(1.0)">
+        <!-- Mechanical Rotating Gear Bearing (pivot plate) -->
+        <path d="M -32,16 A 32,16 0 0,0 32,16 Z" fill="#0f172a" stroke="#1e293b" stroke-width="1.5"/>
+        <path d="M -24,14 A 24,12 0 0,0 24,14 Z" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+        
+        <!-- Heavy armored housing shell with slide panel bolts -->
+        <path d="M -30,12 L -28,-14 L -16,-24 L 16,-24 L 28,-14 L 30,12 Z" fill="url(#housing)" stroke="#090d16" stroke-width="1.2"/>
+        <!-- Inner mechanical structures -->
+        <rect x="-14" y="-12" width="28" height="22" fill="#020617" stroke="#1e293b" stroke-width="1.5" rx="3"/>
+        
+        <!-- Auxiliary heat vents in center of housing -->
+        <rect x="-8" y="-6" width="16" height="3" fill="#ef4444" opacity="0.6"/>
+        <line x1="-8" y1="-4.5" x2="8" y2="-4.5" stroke="#000" stroke-width="0.8"/>
+        <line x1="-4" y1="-4.5" x2="4" y2="-4.5" stroke="#000" stroke-width="0.8"/>
+
+        <!-- Armored battery bank / charging indicators (pulsing amber) -->
+        <rect x="-10" y="2" width="20" height="3.5" fill="#f59e0b" filter="url(#amber-bloom)" class="turret-beez"/>
+        
+        <!-- Upgraded heavy twin barrels with metal cooling ribs -->
+        <!-- Left Cannon Barrel Assembly -->
+        <g class="cannon-barrel-group">
+          <!-- Heavy barrel sliding track -->
+          <rect x="-13.5" y="-32" width="12" height="14" fill="#0f172a" stroke="#334155" stroke-width="0.5"/>
+          <!-- Main barrel tube -->
+          <rect x="-12" y="-72" width="9" height="56" fill="url(#barrel)" stroke="#0f172a" stroke-width="0.6" rx="1"/>
+          <!-- Armored cooling ribs (vertical stack of fins) -->
+          <line x1="-13" y1="-30" x2="-2" y2="-30" stroke="#475569" stroke-width="1.8"/>
+          <line x1="-13" y1="-38" x2="-2" y2="-38" stroke="#475569" stroke-width="1.8"/>
+          <line x1="-13" y1="-46" x2="-2" y2="-46" stroke="#475569" stroke-width="1.8"/>
+          <line x1="-13" y1="-54" x2="-2" y2="-54" stroke="#475569" stroke-width="1.8"/>
+          <line x1="-13" y1="-62" x2="-2" y2="-62" stroke="#475569" stroke-width="1.8"/>
+          
+          <!-- Core plasma charging laser conduit inside the barrel -->
+          <line x1="-7.5" y1="-26" x2="-7.5" y2="-68" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round" opacity="0.8" class="charging-laser-lane"/>
+        </g>
+        
+        <!-- Right Cannon Barrel Assembly -->
+        <g class="cannon-barrel-group">
+          <!-- Heavy barrel sliding track -->
+          <rect x="1.5" y="-32" width="12" height="14" fill="#0f172a" stroke="#334155" stroke-width="0.5"/>
+          <!-- Main barrel tube -->
+          <rect x="3" y="-72" width="9" height="56" fill="url(#barrel)" stroke="#0f172a" stroke-width="0.6" rx="1"/>
+          <!-- Armored cooling ribs (vertical stack of fins) -->
+          <line x1="2" y1="-30" x2="13" y2="-30" stroke="#475569" stroke-width="1.8"/>
+          <line x1="2" y1="-38" x2="13" y2="-38" stroke="#475569" stroke-width="1.8"/>
+          <line x1="2" y1="-46" x2="13" y2="-46" stroke="#475569" stroke-width="1.8"/>
+          <line x1="2" y1="-54" x2="13" y2="-54" stroke="#475569" stroke-width="1.8"/>
+          <line x1="2" y1="-62" x2="13" y2="-62" stroke="#475569" stroke-width="1.8"/>
+          
+          <!-- Core plasma charging laser conduit inside the barrel -->
+          <line x1="7.5" y1="-26" x2="7.5" y2="-68" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round" opacity="0.8" class="charging-laser-lane"/>
+        </g>
+
+        <!-- Dynamic muzzle plates and charging caps -->
+        <circle id="muzzleL" cx="-7.5" cy="-76" r="3" fill="url(#muzzle-hot)" filter="url(#hot-bloom)"/>
+        <circle id="muzzleR" cx="7.5" cy="-76" r="3" fill="url(#muzzle-hot)" filter="url(#hot-bloom)"/>
+        <circle id="flashL" cx="-7.5" cy="-76" r="7.5" fill="#19e3ff" opacity="0" filter="url(#hot-bloom)"/>
+        <circle id="flashR" cx="7.5" cy="-76" r="7.5" fill="#19e3ff" opacity="0" filter="url(#hot-bloom)"/>
+      </g>
+    </svg>
+  </div>
+  <!-- COCKPIT WINDOW STRUTS: frames the gameplay window as a real spacecraft deck -->
+  <div class="cockpit-strut cockpit-left" aria-hidden="true"></div>
+  <div class="cockpit-strut cockpit-right" aria-hidden="true"></div>
+  <div class="cockpit-strut-top cockpit-left-top" aria-hidden="true"></div>
+  <div class="cockpit-strut-top cockpit-right-top" aria-hidden="true"></div>
+  <div id="inputbox"><span id="typed"></span><span id="cursor"></span></div>
+  <svg id="zapLayer" aria-hidden="true"></svg>
+  <div id="cypherBadges"></div>
+  <div id="nanoHud">◆ NANO <span id="nanoCount">0</span></div>
+  <div id="flash"></div>
+  <div id="rankflash"></div>
+</div>
+
+<!-- MAIN MENU -->
+<div id="mainMenu" class="menu">
+  <div id="menuLogoContainer" style="width: 260px; height: 260px; margin-bottom: 24px;">
+    <img src="/logo.png" alt="TYPE STAR" style="width: 100%; height: 100%; object-fit: contain;" referrerPolicy="no-referrer">
+  </div>
+  <div id="main-menu-default">
+    <button class="btn" id="btnNew">START NEW GAME</button>
+    <button class="btn hidden" id="btnContinue">CONTINUE GAME</button>
+    <button class="btn" id="btnSettingsMain">SETTINGS</button>
+  </div>
+</div>
+
+<!-- MODES MENU -->
+<div id="modesMenu" class="menu hidden">
+  <div id="modesLogoContainer" style="width: 260px; height: 260px; margin-bottom: 24px;">
+    <img src="/logo.png" alt="TYPE STAR" style="width: 100%; height: 100%; object-fit: contain;" referrerPolicy="no-referrer">
+  </div>
+  <div id="main-menu-modes">
+    <button class="btn modeBtn" id="btnModeClassic">CLASSIC
+      <span class="modeDesc">Pure typing — no power-ups</span></button>
+    <button class="btn modeBtn" id="btnModeRpg">RPG
+      <span class="modeDesc">Earn Nano · unlock Cyphers · ALT command panel</span></button>
+    <button class="btn" id="btnModeBack">BACK</button>
+  </div>
+</div>
+
+<!-- PAUSE MENU -->
+<div id="pauseMenu" class="menu hidden">
+  <h2>PAUSED</h2>
+  <button class="btn" id="btnResume">PRESS ENTER TO CONTINUE</button>
+  <button class="btn" id="btnSettingsPause">SETTINGS</button>
+  <button class="btn" id="btnQuit">MAIN MENU</button>
+</div>
+
+<!-- SETTINGS — MAIN MENU (full; game-affecting controls live here only) -->
+<div id="settingsMenu" class="menu hidden">
+  <h2>SETTINGS</h2>
+  <div class="row"><label>Damage flash</label><input type="range" id="setFlash" min="0" max="100" value="17"></div>
+  <div class="row"><label>Rank-up flash</label><input type="range" id="setRankFlash" min="0" max="100" value="17"></div>
+  <div class="row"><label>Word speed</label><input type="range" id="setSpeed" min="40" max="200" value="100"></div>
+  <div class="row"><label>Word list</label>
+    <select id="setListMode">
+      <option value="classic">Classic (common words)</option>
+      <option value="obscure">Obscure (all words)</option>
+    </select>
+  </div>
+  <div class="row"><label>Max word length</label>
+    <input type="number" id="setMaxLen" min="3" max="14" placeholder="auto">
+  </div>
+  <div class="row"><label>Use as exact length</label>
+    <input type="checkbox" id="setExactLen">
+  </div>
+  <button class="btn" id="btnSettingsBack">BACK</button>
+</div>
+
+<!-- SETTINGS — IN-GAME (pause; non-game-affecting controls only, so leaderboard
+     difficulty can't be altered mid-run) -->
+<div id="settingsGame" class="menu hidden">
+  <h2>SETTINGS</h2>
+  <div class="row"><label>Damage flash</label><input type="range" id="setFlashG" min="0" max="100" value="17"></div>
+  <div class="row"><label>Rank-up flash</label><input type="range" id="setRankFlashG" min="0" max="100" value="17"></div>
+  <button class="btn" id="btnSettingsGameBack">BACK</button>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameOver" class="menu gameover hidden">
+  <div id="goTitle"></div>
+  <div id="goSub"></div>
+  <div id="goCols">
+    <div class="goCol goColSide">
+      <div class="goHead">Weakest Words</div>
+      <div id="goWeak" class="goLine"></div>
+      <div class="goHead" style="margin-top:14px;">Best Words</div>
+      <div id="goBest" class="goLine"></div>
+    </div>
+    <div class="goCenter">
+      <div id="goBig"><span class="flame">GAME</span><div id="goTurret"></div><span class="flame">OVER</span></div>
+      <button class="btn" id="btnRetry">START NEW GAME</button>
+      <button class="btn" id="btnGoMenu">MAIN MENU</button>
+    </div>
+    <div class="goCol goColSide goRight">
+      <div class="goHead">Scoring</div>
+      <div class="goLine">Possible Score (no combo)<br><span class="v" id="goPossible"></span></div>
+      <hr class="sep">
+      <div class="goLine">Score <span class="v" id="goBase"></span></div>
+      <div class="goLine">Combo Bonus <span class="v" id="goCombo"></span></div>
+      <div class="goLine big">Total Score = <span class="v" id="goTotal"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CYPHER PANEL (ALT) — game stays visible behind it, no dark backdrop -->
+<div id="cypherPanel" class="hidden">
+  <div class="cyHeader">
+    <span class="cyTitle">CYPHERS</span>
+    <span class="cyNano">◆ NANO <span id="cyNanoCount">0</span></span>
+  </div>
+  <div id="cyGrid"></div>
+  <button class="btn" id="btnCyContinue">PRESS ENTER TO CONTINUE</button>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
